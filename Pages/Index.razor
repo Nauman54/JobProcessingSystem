@@ -1,0 +1,144 @@
+﻿@page "/"
+@using ClassLibraryDAL
+@using ClassLibraryModel
+@using System.Security.Claims
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Index</PageTitle>
+
+<style>
+    .user-dept-container {
+        display: flex;
+        justify-content: space-between; /* This will push the elements to the left and right corners */
+    }
+</style>
+
+<div>
+    <AuthorizeView>
+        <Authorized>
+            <!--<h3 class="text-center mt-1">Jobs</h3>-->
+            <div class="user-dept-container">
+                <p id="user">Username: <strong>@username</strong></p>
+                <h2>Jobs</h2>
+                <p id="depart">Department: <strong>@dept</strong></p>
+            </div>
+
+            <div class="mt-4 d-flex justify-content-end">
+                <a href="Job/addJob" class="btn btn-outline-primary btn-sm">Add User</a>
+            </div>
+
+            <div class="mt-4">
+                <table class="table table-striped table-bordered">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th scope="col">Job No</th>
+                            <th scope="col">Assigned To</th>
+                            <th scope="col">Items</th>
+                            <th scope="col">Department</th>
+                            <th scope="col">Nature</th>
+                            <th scope="col">Fault</th>
+                            <th scope="col">JobDate</th>
+                            <th scope="col">Remarks</th>
+                            <th scope="col">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in jobData)
+                        {
+                            <tr>
+                                <td>@item.JobNo</td>
+                                <td>@item.AssignedToDept</td>
+                                <td>@item.ItemName</td>
+                                <td>@item.DeptName</td>
+                                <td>@item.Nature</td>
+                                <td>@item.Fault</td>
+                                <td>@item.JobDate</td>
+                                <td>@item.Remarks</td>
+                                <td>
+                                    <button class="btn btn-primary btn-sm" @onclick="() => PrintRow(item)">Print</button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+        </Authorized>
+    </AuthorizeView>
+</div>
+
+@code {
+    public string? username;
+    public string? dept;
+    private IEnumerable<Claim> claims = Enumerable.Empty<Claim>();
+
+    private List<JobModel> jobData { get; set; } = new List<JobModel>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity is not null && user.Identity.IsAuthenticated)
+        {
+            claims = user.Claims;
+            username = user.FindFirst(c => c.Type == ClaimTypes.Email)?.Value;
+            dept = user.FindFirst(c => c.Type == ClaimTypes.Role)?.Value;
+            jobData = await Task.Run(() => JobDAL.GetJob());
+        }
+    }
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var jsFunction = GetJavaScriptFunctionToPrintRow();
+            await JSRuntime.InvokeVoidAsync("eval", jsFunction);
+        }
+    }
+
+
+    private void PrintRow(JobModel row)
+    {
+        // Create a JavaScript function to print the row's data
+        var jsFunction = $"printRow('{row.JobNo}', '{row.AssignedToDept}', '{row.ItemName}', '{row.DeptName}', '{row.Nature}', '{row.Fault}', '{row.JobDate}', '{row.Remarks}')";
+
+        // Invoke the JavaScript function
+        JSRuntime.InvokeVoidAsync("eval", jsFunction);
+    }
+}
+
+@functions {
+    private string GetJavaScriptFunctionToPrintRow()
+    {
+        return @"
+            function printRow(jobNo, assignedToDept, ItemName, DeptName, Nature, Fault, JobDate, Remarks) {
+                // Create a new window for printing
+                var printWindow = window.open('', '', 'width=600,height=600');
+                printWindow.document.open();
+                printWindow.document.write('<html><head><title>Print Row</title></head><body>');
+
+                // Add row data to the new window
+                printWindow.document.write('<table>');
+                printWindow.document.write('<tr><td>Job No:</td><td>' + jobNo + '</td></tr>');
+                printWindow.document.write('<tr><td>Assigned To Department:</td><td>' + assignedToDept + '</td></tr>');
+                printWindow.document.write('<tr><td>Item:</td><td>' + ItemName + '</td></tr>');
+                printWindow.document.write('<tr><td>Department:</td><td>' + DeptName + '</td></tr>');
+                printWindow.document.write('<tr><td>Nature:</td><td>' + Nature + '</td></tr>');
+                printWindow.document.write('<tr><td>Fault:</td><td>' + Fault + '</td></tr>');
+                printWindow.document.write('<tr><td>Job Date:</td><td>' + JobDate + '</td></tr>');
+                printWindow.document.write('<tr><td>Remarks:</td><td>' + Remarks + '</td></tr>');
+                // Add other row properties in a similar way
+                printWindow.document.write('</table>');
+
+                printWindow.document.write('</body></html>');
+                printWindow.document.close();
+                printWindow.print();
+                printWindow.close();
+            }
+        ";
+    }
+}

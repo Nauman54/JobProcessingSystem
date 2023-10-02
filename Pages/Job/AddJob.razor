@@ -1,0 +1,129 @@
+﻿@page "/Job/addJob"
+@using ClassLibraryModel
+@using ClassLibraryDAL
+@inject NavigationManager nm
+@using System.Security.Claims
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@attribute [Authorize]
+
+<h3>Add Job</h3>
+
+<br />
+<EditForm Model="jobModel" OnSubmit="SaveJob">
+
+	<br />
+	<label>Assigned To</label>
+	<br />
+	<select class="form-control-sm" @onchange="GetAssign">
+		<option value="0">--Select Department--</option>
+		@foreach (var item in deptModel)
+		{
+			<option value="@item.DepartmentId">@item.DeptName</option>
+		}
+	</select>
+	<br />
+	<label>Equipment</label>
+	<br />
+	<select class="form-control-sm" @onchange="GetEquipment">
+		<option value="0">--Select Equipment--</option>
+		@foreach (var item in eqpModel)
+		{
+			<option value="@item.ItemId">@item.ItemName</option>
+		}
+	</select>
+	<br />
+	<label>Department</label>
+	<br />
+	<select class="form-control-sm" @onchange="GetDepartment">
+		<option value="0">--Select Department--</option>
+		@foreach (var item in departModel)
+		{
+			<option value="@item.DepartmentId">@item.DeptName</option>
+		}
+	</select>
+	<br />
+	<label>Nature</label>
+	<br />
+	<input type="text" @bind-value="jobModel.Nature" placeholder="Enter Nature" />
+	<br />
+	<label>Fault</label>
+	<br />
+	<input type="text" @bind-value="jobModel.Fault" placeholder="Enter Fault" />
+	<br />
+	<label>Remarks</label>
+	<br />
+	<input type="text" @bind-value="jobModel.Remarks" placeholder="Enter Remarks" />
+	<br />
+	<button type="submit" class="btn btn-outline-primary btn-sm">@ButtonName</button>
+
+</EditForm>
+<br />
+
+@code {
+	public string? ButtonName { get; set; }
+
+	private List<JobModel>? jobData { get; set; }
+	private JobModel jobModel { get; set; } = new JobModel();
+
+	private List<EquipmentModel> eqpModel { get; set; } = new List<EquipmentModel>();
+	private int equipment { get; set; }
+
+	private List<DepartmentModel> departModel { get; set; } = new List<DepartmentModel>();
+	private int department { get; set; }
+
+	private List<DepartmentModel> deptModel { get; set; } = new List<DepartmentModel>();
+	private int assign { get; set; }
+
+	protected override void OnInitialized()
+	{
+		LoadEquipment();
+		LoadDepartment();
+		LoadAssign();
+		ButtonName = "Save";
+	}
+
+	private void GetAssign(ChangeEventArgs e)
+	{
+		assign = int.Parse(e.Value.ToString());
+	}
+
+	private void LoadAssign()
+	{
+		deptModel = DepartmentDAL.GetDepartment();
+	}
+
+	private void GetEquipment(ChangeEventArgs e)
+	{
+		equipment = int.Parse(e.Value.ToString());
+	}
+
+	private void LoadEquipment()
+	{
+		eqpModel = EquipmentDAL.GetEquipment();
+	}
+
+	private void GetDepartment(ChangeEventArgs e)
+	{
+		department = int.Parse(e.Value.ToString());
+	}
+
+	private void LoadDepartment()
+	{
+		departModel = DepartmentDAL.GetDepartment();
+	}
+
+	private void SaveJob()
+	{
+		if (assign > 0 && equipment > 0 && department > 0)
+		{
+			jobModel.AssignedTo = assign;
+			jobModel.ItemId = equipment;
+			jobModel.DepartmentId = department;
+			if (JobDAL.SaveJob(jobModel) == 1)
+			{
+				nm.NavigateTo("/");
+			}
+		}
+	}
+
+}

@@ -1,0 +1,45 @@
+﻿@page "/login"
+@using JobProcessingSystem.Authentication
+@layout AuthLayout
+@inject UserAccountService userAccountService
+@inject AuthenticationStateProvider authStateProvider
+@inject IJSRuntime JS
+@inject NavigationManager nm
+
+<link href='http://fonts.googleapis.com/css?family=Montserrat:400,700' rel='stylesheet' type='text/css'>
+<div class="logo"></div>
+<div class="login-block">
+    <h1>Login</h1>
+    <input type="text" @bind="model.userName" placeholder="Username" id="username" />
+    <input type="password" @bind="model.password" placeholder="Password" id="password" />
+    <button type="submit" @onclick="Authenticate">Login</button>
+</div>
+
+@code {
+
+    private class Model
+    {
+        public string? userName { get; set; }
+        public string? password { get; set; }
+    }
+
+    private Model model = new Model();
+
+    private async Task Authenticate()
+    {
+        var userAccount = userAccountService.GetByUserEmail(model.userName);
+        if(userAccount == null || userAccount.password != model.password)
+        {
+            await JS.InvokeVoidAsync("alert", "Invalid Username or Password");
+            return;
+        }
+
+        var customAuthStateProvider = (CustomAuthenticationStateProvider) authStateProvider;
+        await customAuthStateProvider.UpdateAuthenticationState(new UserSession
+            {
+                userName = userAccount.userName,
+                DeptName = userAccount.DeptName
+            });
+        nm.NavigateTo("/", true);
+    }
+}
