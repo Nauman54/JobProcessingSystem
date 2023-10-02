@@ -26,7 +26,7 @@
             </div>
 
             <div class="mt-4 d-flex justify-content-end">
-                <a href="Job/addJob" class="btn btn-outline-primary btn-sm">Add User</a>
+                <a href="Job/addJob/@dept" class="btn btn-outline-primary btn-sm">Add Job</a>
             </div>
 
             <div class="mt-4">
@@ -68,7 +68,61 @@
         </Authorized>
     </AuthorizeView>
 </div>
+@*
+<div>
+    <AuthorizeView>
+        <Authorized>
+            <!--<h3 class="text-center mt-1">Jobs</h3>-->
+            <div class="user-dept-container">
+                <p id="user">Username: <strong>@username</strong></p>
+                <h2>Jobs</h2>
+                <p id="depart">Department: <strong>@dept</strong></p>
+            </div>
 
+            <div class="mt-4 d-flex justify-content-end">
+                <a href="Job/addJob/@dept" class="btn btn-outline-primary btn-sm">Add Job</a>
+            </div>
+
+            <div class="mt-4">
+                <table class="table table-striped table-bordered">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th scope="col">Job No</th>
+                            <th scope="col">Assigned To</th>
+                            <th scope="col">Items</th>
+                            <th scope="col">Department</th>
+                            <th scope="col">Nature</th>
+                            <th scope="col">Fault</th>
+                            <th scope="col">JobDate</th>
+                            <th scope="col">Remarks</th>
+                            <th scope="col">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in jobData)
+                        {
+                            <tr>
+                                <td>@item.JobNo</td>
+                                <td>@item.AssignedToDept</td>
+                                <td>@item.ItemName</td>
+                                <td>@item.DeptName</td>
+                                <td>@item.Nature</td>
+                                <td>@item.Fault</td>
+                                <td>@item.JobDate</td>
+                                <td>@item.Remarks</td>
+                                <td>
+                                    <button class="btn btn-primary btn-sm" @onclick="() => PrintRow(item)">Print</button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+        </Authorized>
+    </AuthorizeView>
+</div>
+*@
 @code {
     public string? username;
     public string? dept;
@@ -78,7 +132,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        
+
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
 
@@ -87,7 +141,7 @@
             claims = user.Claims;
             username = user.FindFirst(c => c.Type == ClaimTypes.Email)?.Value;
             dept = user.FindFirst(c => c.Type == ClaimTypes.Role)?.Value;
-            jobData = await Task.Run(() => JobDAL.GetJob());
+            jobData = await Task.Run(() => JobDAL.GetJob(dept));
         }
     }
     
@@ -99,7 +153,6 @@
             await JSRuntime.InvokeVoidAsync("eval", jsFunction);
         }
     }
-
 
     private void PrintRow(JobModel row)
     {
@@ -119,7 +172,7 @@
                 // Create a new window for printing
                 var printWindow = window.open('', '', 'width=600,height=600');
                 printWindow.document.open();
-                printWindow.document.write('<html><head><title>Print Row</title></head><body>');
+                printWindow.document.write('<html><head><title>' + jobNo + '</title></head><body>');
 
                 // Add row data to the new window
                 printWindow.document.write('<table>');

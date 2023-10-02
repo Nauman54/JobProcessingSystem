@@ -1,4 +1,4 @@
-﻿@page "/Job/addJob"
+﻿@page "/Job/addJob/{dept}"
 @using ClassLibraryModel
 @using ClassLibraryDAL
 @inject NavigationManager nm
@@ -6,60 +6,64 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @attribute [Authorize]
 
-<h3>Add Job</h3>
+<h3 class="text-center mb-4">Add Job</h3>
 
 <br />
 <EditForm Model="jobModel" OnSubmit="SaveJob">
+	<div class="mb-3">
+		<label for="assign" class="form-label">Assigned To</label>
+		<br />
+		<select class="form-control" id="assign" style="width:100%" @onchange="GetAssign">
+			<option value="0">--Select Department--</option>
+			@foreach (var item in deptModel)
+			{
+				<option value="@item.DepartmentId">@item.DeptName</option>
+			}
+		</select>
+	</div>
 
-	<br />
-	<label>Assigned To</label>
-	<br />
-	<select class="form-control-sm" @onchange="GetAssign">
-		<option value="0">--Select Department--</option>
-		@foreach (var item in deptModel)
-		{
-			<option value="@item.DepartmentId">@item.DeptName</option>
-		}
-	</select>
-	<br />
-	<label>Equipment</label>
-	<br />
-	<select class="form-control-sm" @onchange="GetEquipment">
-		<option value="0">--Select Equipment--</option>
-		@foreach (var item in eqpModel)
-		{
-			<option value="@item.ItemId">@item.ItemName</option>
-		}
-	</select>
-	<br />
-	<label>Department</label>
-	<br />
-	<select class="form-control-sm" @onchange="GetDepartment">
-		<option value="0">--Select Department--</option>
-		@foreach (var item in departModel)
-		{
-			<option value="@item.DepartmentId">@item.DeptName</option>
-		}
-	</select>
-	<br />
-	<label>Nature</label>
-	<br />
-	<input type="text" @bind-value="jobModel.Nature" placeholder="Enter Nature" />
-	<br />
-	<label>Fault</label>
-	<br />
-	<input type="text" @bind-value="jobModel.Fault" placeholder="Enter Fault" />
-	<br />
-	<label>Remarks</label>
-	<br />
-	<input type="text" @bind-value="jobModel.Remarks" placeholder="Enter Remarks" />
-	<br />
-	<button type="submit" class="btn btn-outline-primary btn-sm">@ButtonName</button>
+	<div class="mb-3">
+		<label for="equipment" class="form-label">Equipment</label>
+		<br />
+		<select class="form-control" id="equipment" style="width:100%" @onchange="GetEquipment">
+			<option value="0">--Select Equipment--</option>
+			@foreach (var item in eqpModel)
+			{
+				<option value="@item.ItemId">@item.ItemName</option>
+			}
+		</select>
+	</div>
+
+	<div class="mb-3">
+		<label for="nature" class="form-label">Nature</label>
+		<br />
+		<input type="text" class="form-control" id="nature" @bind-value="jobModel.Nature" placeholder="Enter Nature" />
+	</div>
+
+	<div class="mb-3">
+		<label for="fault" class="form-label">Fault</label>
+		<br />
+		<input type="text" class="form-control" id="fault" @bind-value="jobModel.Fault" placeholder="Enter Fault" />
+	</div>
+
+	<div class="mb-3">
+		<label for="remarks" class="form-label">Remarks</label>
+		<br />
+		<input type="text" class="form-control" id="remarks" @bind-value="jobModel.Remarks" placeholder="Enter Remarks" />
+	</div>
+
+	<div class="d-grid gap-2 d-md-flex justify-content-md-end">
+		<button type="submit" class="btn btn-outline-primary">@ButtonName</button>
+	</div>
 
 </EditForm>
 <br />
 
 @code {
+
+	[Parameter]
+	public string? dept { get; set; }
+
 	public string? ButtonName { get; set; }
 
 	private List<JobModel>? jobData { get; set; }
@@ -102,14 +106,10 @@
 		eqpModel = EquipmentDAL.GetEquipment();
 	}
 
-	private void GetDepartment(ChangeEventArgs e)
-	{
-		department = int.Parse(e.Value.ToString());
-	}
-
 	private void LoadDepartment()
 	{
-		departModel = DepartmentDAL.GetDepartment();
+		departModel = DepartmentDAL.GetDepartmentByName(dept);
+		department = departModel[0].DepartmentId;
 	}
 
 	private void SaveJob()

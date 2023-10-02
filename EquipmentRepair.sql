@@ -23,7 +23,7 @@ ItemName nvarchar(1000)
 create table Job
 (
 ID INT IDENTITY(1, 1) NOT NULL,
-JobNo AS 'KRL-AAA-EME-' + CAST(ID AS VARCHAR(10)) PERSISTED PRIMARY KEY,
+JobNo NVARCHAR(50) NOT NULL PRIMARY KEY,
 AssignedTo int foreign key references Department(DepartmentId),
 ItemId int foreign key references Items(ItemId),
 DepartmentId int foreign key references Department(DepartmentId),
@@ -31,6 +31,13 @@ Nature nvarchar(50),
 Fault nvarchar(max),
 JobDate datetime,
 Remarks nvarchar(max)
+)
+
+create table JobIdChanger
+(
+JobChangerID INT IDENTITY(1, 1) NOT NULL PRIMARY KEY,
+JobName NVARCHAR(50) NOT NULL UNIQUE,
+DepartmentId int foreign key references Department(DepartmentId)
 )
 
 create table systemuser
@@ -43,12 +50,28 @@ createDate datetime,
 DepartmentId int foreign key references Department(DepartmentId)
 )
 
+
+insert into Items(ItemName) values('Computer');
+insert into Items(ItemName) values('AC');
+insert into Items(ItemName) values('Table');
+insert into Items(ItemName) values('Chair');
+
+insert into Department(DeptName) values('Bio-Medical');
+insert into Department(DeptName) values('Electrical-Power');
+
+insert into JobIdChanger(JobName,DepartmentId) values('KRLH-AAA-EME-',1);
+insert into JobIdChanger(JobName,DepartmentId) values('KHI/EP/HR/',2);
+
+insert into systemuser(userName,[password],isActive,createDate,DepartmentId) values('nauman','ahmed',1,GETDATE(),1);
+insert into systemuser(userName,[password],isActive,createDate,DepartmentId) values('admin','admin',1,GETDATE(),2);
+
+select * from JobIdChanger
+
 select * from Job
 
 select * from systemuser
 
-insert into systemuser(userName,[password],isActive,createDate,DepartmentId) values('nauman','ahmed',1,GETDATE(),1);
-insert into systemuser(userName,[password],isActive,createDate,DepartmentId) values('admin','admin',1,GETDATE(),2);
+--SELECT COUNT(JobNo)+1 FROM Job WHERE DepartmentId = 1;
 
 --create proc Sp_GetEquipment
 --as 
