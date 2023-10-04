@@ -15,16 +15,20 @@
     }
 </style>
 
-
-
 <div>
     <AuthorizeView>
         <Authorized>
             <!--<h3 class="text-center mt-1">Jobs</h3>-->
             <div class="user-dept-container">
-                <p id="user">Username: <strong>@username</strong></p>
+                <div>
+                    <img src="https://icons.veryicon.com/png/o/miscellaneous/icon-icon-of-ai-intelligent-dispensing/login-user-name-1.png" alt="Username" class="img-fluid" style="max-height:24px;" />
+                    <span><strong>@username</strong></span>
+                </div>
                 <h2>Jobs</h2>
-                <p id="depart">Department: <strong>@dept</strong></p>
+                <div>
+                    <img src="https://icons.iconarchive.com/icons/icons8/windows-8/512/Business-Department-icon.png" alt="Department" class="img-fluid" style="max-height:20px;" />
+                    <span><strong>@dept</strong></span>
+                </div>
             </div>
 
             <div class="mt-4 d-flex justify-content-end">
@@ -112,40 +116,6 @@
     }
 }
 
-@*
-@functions {
-    private string GetJavaScriptFunctionToPrintRow()
-    {
-        return @"
-            function printRow(jobNo, assignedToDept, ItemName, DeptName, Nature, Fault, JobDate, Remarks) {
-                // Create a new window for printing
-                var printWindow = window.open('', '', 'width=600,height=600');
-                printWindow.document.open();
-                printWindow.document.write('<html><head><title>' + DeptName + '</title></head><body>');
-
-                // Add row data to the new window
-                printWindow.document.write('<table>');
-                printWindow.document.write('<tr><td>Assigned To Department:</td><td>' + assignedToDept + '</td></tr>');
-                printWindow.document.write('<tr><td>Job No:</td><td>' + jobNo + '</td></tr>');
-                printWindow.document.write('<tr><td>Item:</td><td>' + ItemName + '</td></tr>');
-                printWindow.document.write('<tr><td>Department:</td><td>' + DeptName + '</td></tr>');
-                printWindow.document.write('<tr><td>Nature:</td><td>' + Nature + '</td></tr>');
-                printWindow.document.write('<tr><td>Fault:</td><td>' + Fault + '</td></tr>');
-                printWindow.document.write('<tr><td>Job Date:</td><td>' + JobDate + '</td></tr>');
-                printWindow.document.write('<tr><td>Remarks:</td><td>' + Remarks + '</td></tr>');
-                // Add other row properties in a similar way
-                printWindow.document.write('</table>');
-
-                printWindow.document.write('</body></html>');
-                printWindow.document.close();
-                printWindow.print();
-                printWindow.close();
-            }
-        ";
-    }
-}
-
-*@
 
 @functions {
     private string GetJavaScriptFunctionToPrintRow()
